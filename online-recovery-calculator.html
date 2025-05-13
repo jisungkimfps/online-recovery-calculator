@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Online Recovery Score Calculator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 40px;
+      }
+
+      h1 {
+        margin-bottom: 20px;
+      }
+
+      .options {
+        margin-bottom: 30px;
+      }
+
+      select {
+        padding: 5px;
+        margin: 0 10px;
+      }
+
+      .sliders-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+        margin-bottom: 40px;
+      }
+
+      .slider-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 300px;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        margin: 10px 0;
+      }
+
+      input[type="number"] {
+        width: 60px;
+        margin-top: 5px;
+      }
+
+      .final-grade {
+        font-size: 1.5em;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .max-grade-note {
+        font-size: 0.9em;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Online Recovery Score Calculator</h1>
+
+    <div class="options">
+      <label for="courseType">Course Type:</label>
+      <select id="courseType">
+        <option value="regular">Regular (Non-AP)</option>
+        <option value="ap">AP / Honors / Math</option>
+      </select>
+
+      <label for="attempt">Attempt:</label>
+      <select id="attempt">
+        <option value="1">1st Attempt</option>
+        <option value="2">2nd Attempt</option>
+      </select>
+    </div>
+
+    <div class="sliders-wrapper">
+      <div class="slider-block">
+        <label id="onlineLabel" for="onlineSlider"
+          >Online Course Grade (40%)</label
+        >
+        <input type="range" id="onlineSlider" min="0" max="100" value="50" />
+        <input type="number" id="onlineInput" min="0" max="100" value="50" />
+      </div>
+
+      <div class="slider-block">
+        <label id="oldLabel" for="oldSlider">Old Course Grade (60%)</label>
+        <input type="range" id="oldSlider" min="0" max="100" value="50" />
+        <input type="number" id="oldInput" min="0" max="100" value="50" />
+      </div>
+    </div>
+
+    <div class="final-grade">
+      Final Grade: <span id="finalGrade">50.0</span>
+    </div>
+    <div class="max-grade-note" id="maxGradeNote">
+      1st Attempt Max Grade is 83%
+    </div>
+
+    <script>
+      const onlineSlider = document.getElementById("onlineSlider");
+      const oldSlider = document.getElementById("oldSlider");
+      const onlineInput = document.getElementById("onlineInput");
+      const oldInput = document.getElementById("oldInput");
+      const finalGradeDisplay = document.getElementById("finalGrade");
+      const courseType = document.getElementById("courseType");
+      const attempt = document.getElementById("attempt");
+      const onlineLabel = document.getElementById("onlineLabel");
+      const oldLabel = document.getElementById("oldLabel");
+      const maxGradeNote = document.getElementById("maxGradeNote");
+
+      function updateLabelsAndGrade() {
+        let oldWeight, onlineWeight, maxGrade;
+
+        if (courseType.value === "regular") {
+          oldWeight = 60;
+          onlineWeight = 40;
+        } else {
+          oldWeight = 65;
+          onlineWeight = 35;
+        }
+
+        // Update weight labels
+        oldLabel.textContent = `Old Course Grade (${oldWeight}%)`;
+        onlineLabel.textContent = `Online Course Grade (${onlineWeight}%)`;
+
+        // Calculate final grade
+        const old = parseFloat(oldSlider.value);
+        const online = parseFloat(onlineSlider.value);
+        let rawFinal = old * (oldWeight / 100) + online * (onlineWeight / 100);
+
+        // Apply cap based on attempt
+        if (attempt.value === "1") {
+          maxGrade = 83;
+          maxGradeNote.textContent = "1st Attempt Max Grade is 83%";
+        } else {
+          maxGrade = 80;
+          maxGradeNote.textContent = "2nd Attempt Max Grade is 80%";
+        }
+
+        if (rawFinal > maxGrade) rawFinal = maxGrade;
+
+        finalGradeDisplay.textContent = rawFinal.toFixed(1);
+      }
+
+      function sync(slider, input) {
+        slider.addEventListener("input", () => {
+          input.value = slider.value;
+          updateLabelsAndGrade();
+        });
+
+        input.addEventListener("input", () => {
+          let value = Math.min(Math.max(input.value, 0), 100);
+          input.value = value;
+          slider.value = value;
+          updateLabelsAndGrade();
+        });
+      }
+
+      // Event listeners for dropdowns
+      courseType.addEventListener("change", updateLabelsAndGrade);
+      attempt.addEventListener("change", updateLabelsAndGrade);
+
+      sync(onlineSlider, onlineInput);
+      sync(oldSlider, oldInput);
+      updateLabelsAndGrade();
+    </script>
+  </body>
+</html>
